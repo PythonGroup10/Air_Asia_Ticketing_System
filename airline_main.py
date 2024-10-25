@@ -992,7 +992,86 @@ class UserMenus():
     def __init__(self):
         pass
 
-    #add customer menu and employee menu here
+    # add customer menu and employee menu here
+
+    # employee menu
+    def employeeMenu(self):
+
+        employee_menus = {"get": "Get all employees",
+                          "getby": "Get employees by Id",
+                          "update": "Update employees",
+                          "add": "Add employees",
+                          "delete": "Delete employees",
+                          "reset": "Reset database"
+                          }
+
+        print("This is employee menus, please choose a selection")
+
+        user_selection = ""
+        while user_selection != "exit":
+            print("***Menus List***")
+            for option in employee_menus.items():
+                print(option)
+
+            user_selection = input("Select an option: ")
+            employee = Employee()
+
+            if user_selection == "get":
+                results = employee.getAllEmployees()
+                for result in results:
+                    print(result)
+                input("Press return to continue")
+
+            elif user_selection == "getby":
+                employeeUsername = str(input("Enter Employee Username: "))
+                results = employee.retrieve_employee_information(employeeUsername)
+                print(results)
+                input("Press return to continue")
+
+            elif user_selection == "update":
+                results = employee.getAllEmployees()
+                for item in results:
+                    print(item)
+
+                first_name = str(input("Enter Employee First Name: "))
+                last_name = str(input("Enter Employee Last Name: "))
+                job_title = str(input("Enter Employee Job Title: "))
+                flight_id = int(input("Enter Employee FlightID: "))
+                username = str(input("Enter Employee Username: "))
+
+                employee.update_employee_info(first_name, last_name, job_title, flight_id, username)
+                print(employee.retrieve_employee_information(username))
+                input("Press return to continue")
+
+            elif user_selection == "add":
+                username = input("Username: ")
+                password = input("Password: ")
+                first_name = input("First Name: ")
+                last_name = input("Last Name: ")
+                job_title = input("Job Title: ")
+                flight_id = input("Flight ID: ")
+                employee.add_employee_info(first_name, last_name, job_title, flight_id, username, password)
+                print("Done\n")
+                input("Press return to continue")
+
+            elif user_selection == "delete":
+                employeeUsername = str(input("Enter Employee Username: "))
+                employee.delete_employee(employeeUsername)
+                print("Done\n")
+                input("Press return to continue")
+
+            elif user_selection == "reset":
+                confirm = input("This will delete all records from Employee table, continue? (y/n)").lower()
+                if confirm == "y":
+                    employee.reset_database()
+                    print("Reset complete")
+                    input("Press return to continue")
+                else:
+                    print("Reset aborted")
+                    input("Press return to continue")
+            else:
+                if user_selection != "exit":
+                    print("Invalid selection. please try again\n")
 
     def adminMenu(self):
         try:
@@ -1005,3 +1084,15 @@ class UserMenus():
             print("An Error has occured:", e)
             self.adminMenu()
 
+
+
+
+employee = Employee();
+#add_employee_info(self, first_name, last_name, job_title, flight_id, username, password)
+#employee.add_employee_info("Suni", "Aryal", "QA", "45", "Sunita#1", "sdgdsggga")
+#employee.update_employee_info("Sunita","Aryal", "Flight Crew", "45", "Sunita#1")
+# employee.delete_employee("Sunita#1")
+
+
+# user = UserMenus()
+# user.employeeMenu()
