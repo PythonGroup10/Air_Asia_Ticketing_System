@@ -1,3 +1,4 @@
+import random
 import bcrypt
 from AirAsiaCsvIO import CsvToDB, CsvToDBWithEncryption, DbToCSV
 from AirAsia import AirAsiaDatabase
@@ -58,7 +59,6 @@ class Customer(AirAsiaDatabase): #This class contains all the CRUD methods for t
     def getAllCustomers(self):
         # returns customer details based on an username.
         try:
-            print('inside')
             sql = "SELECT * FROM Customer ;"
             super().get_cursor.execute(sql)
             result = super().get_cursor.fetchall()
@@ -67,6 +67,7 @@ class Customer(AirAsiaDatabase): #This class contains all the CRUD methods for t
         except Exception as e:
             print("Error in getCustomer block:", e)
 
+    #verify user login
     def verifyCustomerAuthentication(self, username, password):
         try:
             print(f"Verifying authentication for username: {username}")
@@ -159,18 +160,19 @@ class Ticket(AirAsiaDatabase):#This class will contain all the CRUD methods for 
         
         try: 
             sql = "INSERT INTO Ticket(customer_id, flight_id, cost, purchase_date) VALUES (?, ?, ?, ?);"
-            super().get_cursor().execute(sql, (username, flightID, cost, purchaseDate))
-            super().get_conn.commit()
+            super().get_cursor.execute(sql, (username, flightID, cost, purchaseDate))
+            super().get_connection.commit()
             print("Ticket is booked succesfully.")
+            
         except Exception as e:
             print("Error in addTicket block::", e)
     
     def updateTicket(self, ticketNum, flightID, purchaseDate):
         # updates ticketdetails based on its ticket_num.
         try:
-            sql = "UPDATE Ticket SET customer_id = ?, flight_id = ?, cost = ?, purchase_date = ?  WHERE ticket_num = ?;" 
+            sql = "UPDATE Ticket SET flight_id = ?, purchase_date = ?  WHERE ticket_num = ?;" 
             super().get_cursor.execute(sql, (flightID, purchaseDate, ticketNum))
-            super().get_conn.commit()
+            super().get_connection.commit()
             print("ticket details are updated succesfully.")
         except Exception as e:
             print("Error in updateTicket block: ", e)
@@ -180,16 +182,16 @@ class Ticket(AirAsiaDatabase):#This class will contain all the CRUD methods for 
         try: 
             sql = "DELETE FROM Ticket WHERE ticket_num = ?;" 
             super().get_cursor.execute(sql, (ticketNum,))
-            super().get_conn.commit()
+            super().get_connection.commit()
             print("Ticket is deleted succesfully.")
         except Exception as e:
             print("Error in deleteTicket block:", e)
     
-    def getTicket(self, ticketNum):
+    def getTicket(self, ticketNum, customer_id):
         # returns ticket details based on a ticket_num.
         try:
-            sql = "SELECT * FROM Ticket WHERE ticket_num = ?;"
-            super().get_cursor.execute(sql, (ticketNum,))
+            sql = "SELECT * FROM Ticket WHERE ticket_num = ? AND customer_id = ? ;"
+            super().get_cursor.execute(sql, (ticketNum, customer_id))
             result = super().get_cursor.fetchall()
             return result
         except Exception as e:
@@ -267,7 +269,6 @@ class Employee(AirAsiaDatabase): #This class contains all the CRUD methods for t
     def getAllEmployees(self):
         # returns employee details based on username.
         try:
-            print('inside')
             sql = "SELECT * FROM Employee ;"
             super().get_cursor.execute(sql)
             result = super().get_cursor.fetchall()
@@ -276,6 +277,7 @@ class Employee(AirAsiaDatabase): #This class contains all the CRUD methods for t
         except Exception as e:
             print("Error in getEmployee block:", e)
 
+    #verify employee role
     def get_employee_job_title(self, username):
         try:
             if username is not None:
@@ -288,6 +290,7 @@ class Employee(AirAsiaDatabase): #This class contains all the CRUD methods for t
         except Exception as e:
             print("There was an error retrieving the employee entry", e)
 
+    #verify employee user login
     def verifyEmployeeAuthentication(self, username, password):
         try:
             print(f"Verifying authentication for username: {username}")
@@ -375,7 +378,6 @@ class Flight(AirAsiaDatabase):  # This class contains all the CRUD methods for t
     def getAllFlights(self):
         # returns flight details based on an username.
         try:
-            print('inside')
             sql = "SELECT * FROM Flight;"
             super().get_cursor.execute(sql)
             result = super().get_cursor.fetchall()
@@ -384,13 +386,12 @@ class Flight(AirAsiaDatabase):  # This class contains all the CRUD methods for t
         except Exception as e:
             print("Error in getFlight block:", e)
 
-
-
 class AirlineMain(Customer, Airport, Employee, Flight):
 
     def __init__(self):
         super().__init__()
 
+    # import aiport records from csv into the sql DB
     def updateAirportWithCSV(self):
         try:
             fileName = str(input("Please enter a file name (.csv) - eg : airport.csv: "))
@@ -399,6 +400,7 @@ class AirlineMain(Customer, Airport, Employee, Flight):
         except Exception as e:
             print("Error while updating Airport with CSV: ", e)
 
+    # import ticket records from csv into the sql DB
     def updateTicketWithCSV(self):
         try:
             fileName = str(input("Please enter a file name (.csv) - eg : tickets.csv: "))
@@ -407,6 +409,7 @@ class AirlineMain(Customer, Airport, Employee, Flight):
         except Exception as e:
             print("Error while updating Airport with CSV: ", e)
 
+    # import flight records from csv into the sql DB
     def updateFlightWithCSV(self):
         try:
             fileName = str(input("Please enter a file name (.csv)- eg : flights.csv: "))
@@ -415,6 +418,7 @@ class AirlineMain(Customer, Airport, Employee, Flight):
         except Exception as e:
             print("Error while updating Flight with CSV: ", e)
 
+    # import customer records from csv into the sql DB with encryption
     def updateCustomerWithCSV(self):
         try:
             fileName = str(input("Please enter a file name (.csv)- eg : customer.csv: "))
@@ -423,6 +427,7 @@ class AirlineMain(Customer, Airport, Employee, Flight):
         except Exception as e:
             print("Error while updating Customer with CSV: ", e)
 
+    # import employee records from csv into the sql DB with encryption
     def updateEmployeeWithCSV(self):
         try:
             fileName = str(input("Please enter a file name (.csv)- eg : employee.csv: "))
@@ -431,6 +436,7 @@ class AirlineMain(Customer, Airport, Employee, Flight):
         except Exception as e:
             print("Error while updating Employee with CSV: ", e)
 
+# Below class contains functionalities for all user actions and user authentication
 class UserAuthentication:
     def user_authentication(self):
         while True:
@@ -478,7 +484,7 @@ class UserAuthentication:
             print("Invalid user type. Please enter 'customer', 'employee', or 'admin'.")
 
     def customer_signin(self):
-        username = input("Username: ")
+        username = input("Enter Customer Username: ")
         password = input("Password: ")
         customer = Customer()
         if customer.verifyCustomerAuthentication(username, password):
@@ -548,14 +554,6 @@ class UserAuthentication:
             except ValueError:
                 print("Invalid date format. Please use YYYY-MM-DD.")
 
-    def customer_user_actions(self):
-        print("Customer actions menu")
-        # Implement customer actions here
-
-    def employee_user_actions(self):
-        print("Employee actions menu")
-        # Implement employee actions here
-
     # user admin functions
     def updateCustomer(self): #same as modify customer
         try:
@@ -588,32 +586,7 @@ class UserAuthentication:
             print('Customer details are:', info)
         except Exception as e:
             print("Error in delete_customer method: ", e)
-            self.admin_user_actions()
-
-    #below ticket fucntions to be added by Leyna
-    def book_ticket(self):
-        try:
-            pass
-        except Exception as e:
-            pass
-    
-    def modify_ticket(self):
-        try:
-            pass
-        except Exception as e:
-            pass
-    
-    def cancel_ticket(self):
-        try:
-            pass
-        except Exception as e:
-            pass
-
-    def retrieve_ticket(self):
-        try:
-            pass
-        except Exception as e:
-            pass    
+            self.admin_user_actions()  
     
     def add_airport(self):
         try:
@@ -746,14 +719,100 @@ class UserAuthentication:
             print("Error while deleting employee: ", e)
             self.admin_user_actions()
 
-    #below SEARCH fucntion to be added by Leyna
+    def retrieve_all_employees(self):
+        try:
+            info = Employee().getAllEmployees()  
+            print("Employee details are:", info)
 
-    def search_flight(self):
+        except Exception as e:
+            print("Error while deleting employee: ", e)
+            self.admin_user_actions()
+
+    def search_flights(self):
+        # Retrieve all available flights in the database
+        available_flights = Flight().getAllFlights()
+
+        #This will print all the available flights for the customer to view
+        print("List of available flights to choose from:")
+        for flight in available_flights:
+            print(f"Flight ID: {flight[0]}, Takeoff Airport: {flight[1]} Destination: {flight[2]}, Date: {flight[4]} Time: {flight[5]}")
+
+    
+    def get_all_tickets(self):
+        try:
+            info = Ticket().getAllTickets()  
+            print("Ticket details are:", info)
+
+        except Exception as e:
+            print("Error while deleting employee: ", e)
+            self.admin_user_actions()
+
+    def modify_ticket(self):
         try:
             pass
         except Exception as e:
             pass
-    
+
+    def retrieve_ticket(self):
+        try:
+            username = input("Please enter your username: ")
+            ticket_num = int(input("Please enter the ticket number you wish to retrieve: "))
+            
+            # Get customer information first
+            customer_info = Customer().retrieve_customer_information(username)
+            if not customer_info:
+                print("Customer not found. Please check your username.")
+                return
+            customer_id = customer_info[0]  # Assuming first element is customer_id
+            # Check if ticket exists and belongs to the customer
+            ticket = Ticket().getTicket(ticket_num, customer_id)
+            if ticket:
+                print("ticket details are:", ticket)
+            else:
+                print("Ticket not found or you are not authorized to fetch this ticket.")
+        except Exception as e:
+            print("There was an error fetching your ticket:", e)
+
+    def purchase_ticket(self):
+        try:
+            self.search_flights()
+            flight_chosen = input("Please enter the flight ID you wish to fly on: ")
+            username = input("Please enter your username: ")
+            purchase_date = datetime.now().strftime('%Y-%m-%d')  # Format: YYYY-MM-DD
+            cost = random.uniform(100.0, 1500.0)
+
+            customer_info = Customer().retrieve_customer_information(username)
+            if customer_info:
+                customer_id = customer_info[0]  # Assuming the first element is customer_id
+                Ticket().addTicket(customer_id, flight_chosen, cost, purchase_date)
+                print("Ticket for flight purchased successfully! Please have a safe trip!")
+            else:
+                print("Customer account not found. Please sign up for an account before proceeding")
+        except Exception as e:
+            print("There was an error purchasing your flight:", e)
+            
+    def cancel_ticket(self):
+        try:
+            username = input("Please enter your username: ")
+            ticket_num = int(input("Please enter the ticket number you wish to delete: "))
+            
+            # Get customer information first
+            customer_info = Customer().retrieve_customer_information(username)
+            if not customer_info:
+                print("Customer not found. Please check your username.")
+                return
+            customer_id = customer_info[0]  # Assuming first element is customer_id
+            # Check if ticket exists and belongs to the customer
+            ticket = Ticket().getTicket(ticket_num, customer_id)
+            if ticket:
+                # Delete the ticket
+                Ticket().deleteTicket(ticket_num)
+                print("Ticket successfully deleted!")
+            else:
+                print("Ticket not found or you are not authorized to delete this ticket.")
+        except Exception as e:
+            print("There was an error cancelling your ticket:", e)
+
     def generateFlightSalesReport(self):
         reportQuery = """
                         SELECT
@@ -800,6 +859,65 @@ class UserAuthentication:
 
         output.writeToCsvFile()
 
+    def employee_user_actions(self):
+        try:
+            employee_choice = UserMenus.employeeMenu(self)
+            if employee_choice == 1:
+                print("***SEARCH FOR FLIGHTS***")
+                self.search_flights()
+                self.employee_user_actions()
+            elif employee_choice == 2:
+                print("***GET ALL EMPLOYEE DETAILS***")
+                self.retrieve_all_employees()
+                self.employee_user_actions()
+            elif employee_choice == 3:
+                print("***GET AN EMPLOYEE DETAILS***")
+                self.retrieve_employee()
+                self.employee_user_actions()
+            elif employee_choice == 4:
+                print("***UPDATE AN EMPLOYEE DETAILS***")
+                self.update_employee()
+                self.employee_user_actions()
+            elif employee_choice == 5:
+                print("***BOOK TICKET***")
+                self.purchase_ticket()
+                self.employee_user_actions()    
+            elif employee_choice == 6:
+                print("Thank you for using Air Asia! Have a good day")
+                exit()
+            else:
+                print("Unable to retrieve your account information, please try again or sign up")
+
+        except Exception as e:
+            print("Error in the employee actions block: ", e)
+            self.employee_user_actions() 
+
+    def customer_user_actions(self):
+        try:
+            print("customer actions")
+            customer_choice = UserMenus.customer_menu(self)
+            if customer_choice == 1:
+                print("***SEARCH FOR FLIGHTS***")
+                self.search_flights()
+                self.customer_user_actions()
+            elif customer_choice == 2:
+                print("***PURCHASE FLIGHT TICKETS***")
+                self.purchase_ticket()
+                self.customer_user_actions()
+            elif customer_choice == 3:
+                print("***CANCEL FLIGHT TICKETS***")
+                self.cancel_ticket()
+                self.customer_user_actions()
+            elif customer_choice == 4:
+                print("Thank you for using Air Asia! Have a good day")
+                exit()
+            else:
+                print("Unable to retrieve your account information, please try again or sign up")
+                self.customer_user_actions()
+        except Exception as e:
+            print("Error in the customer actions block: ", e)
+            # self.customer_user_actions() 
+
     def admin_user_actions(self):
         try:
             print("Welcome to Air Asia!")
@@ -838,21 +956,21 @@ class UserAuthentication:
 
             elif admin_menu_input == 2: # book/modify/cancel ticket
                 try:
-                    menuInput = int(input("Please select an option: \n 1. Book Ticket \n 2. Modify Ticket \n 3. Cancel Ticket \n 4. Retrieve Ticket \n 5. Back to the main menu \n 6. Exit \n"))
+                    menuInput = int(input("Please select an option: \n 1. Book Ticket \n 2. Cancel Ticket \n 3. Retrieve Ticket \n 4. Get all tickets \n 5. Back to the main menu \n 6. Exit \n"))
                     if menuInput == 1:
-                        self.book_ticket()
+                        self.purchase_ticket()
                         self.admin_user_actions()
 
                     elif menuInput == 2:
-                        self.modify_ticket()
-                        self.admin_user_actions()
-
-                    elif menuInput == 3:
                         self.cancel_ticket()
                         self.admin_user_actions()
                     
-                    elif menuInput == 4:
+                    elif menuInput == 3:
                         self.retrieve_ticket()
+                        self.admin_user_actions()
+
+                    elif menuInput == 4:
+                        self.get_all_tickets()
                         self.admin_user_actions()
 
                     elif menuInput == 5:
@@ -965,7 +1083,7 @@ class UserAuthentication:
                     print("Error in Admin menu input: ", e)
 
             elif admin_menu_input == 6: # searches for flights 
-                self.search_flight()
+                self.search_flights()
                 self.admin_user_actions()
 
             elif admin_menu_input == 7: # generate flight sales report
@@ -987,13 +1105,50 @@ class UserAuthentication:
         except Exception as e:
             print("Error in the admin_user_actions block: ", e)
             self.admin_user_actions()
-
+    
 class UserMenus():
     def __init__(self):
         pass
+    
+    #customer menu
+    def customer_menu(self):
+        try:
+            print("*** Welcome to the customer menu! ***")
+            print("1. Search for flight")
+            print("2. Purchase a flight ticket")
+            print("3. Cancel a flight ticket")
+            print("4. Exit")
 
-    #add customer menu and employee menu here
+            customer_choice = int(input("Please input the number for the option you would like: "))
+            return customer_choice
+        except ValueError:
+            print("Invalid input. Please enter a number from the Menu.")
+            self.customer_menu()
+        except Exception as e:
+            print("An Error has occured:", e)
+            self.customer_menu()
 
+    # employee menu
+    def employeeMenu(self):
+        try:
+            print("*** Welcome to the Employee menu! ***")
+            print("1. Search for flight")
+            print("2. Get all employees")
+            print("3. Get employees by Id")
+            print("4. Update employee")
+            print("5. Book ticket")
+            print("6. Exit")
+
+            employee_choice = int(input("Please input the number for the option you would like: "))
+            return employee_choice
+        except ValueError:
+            print("Invalid input. Please enter a number from the Menu.")
+            self.employeeMenu()
+        except Exception as e:
+            print("An Error has occured:", e)
+            self.employeeMenu()
+
+    #admin menu
     def adminMenu(self):
         try:
             val = int(input("Please select one of the options to proceed: \n Menu: \n 1. Add/Modify/Delete Customer \n 2. Book/Modify/Cancel Ticket \n 3. Add/Modify/Delete Airports  \n 4. Add/Modify/Delete Flights \n 5. Add/Modify/Delete Employees  \n 6. Search Flights \n 7. Generate Flight Sales Report \n 8. Generate Employee report for flights \n 9. Exit \n"))

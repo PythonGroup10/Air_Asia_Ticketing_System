@@ -2,8 +2,6 @@ employee_id,employee_first_name,employee_last_name,job_title,flight_id,airportTo
 1,Emily,Davis,Pilot,1,LAX,2024-03-15,08:30
 2,Michael,Wilson,Co-pilot,1,LAX,2024-03-15,08:30
 3,Jessica,Garcia,Flight Attendant,1,LAX,2024-03-15,08:30
-31,Roja,Chekuri,admin,1,LAX,2024-03-15,08:30
-32,test,test,att,1,LAX,2024-03-15,08:30
 4,Ashley,Rodriguez,Pilot,2,CDG,2024-03-16,10:15
 5,Kevin,Williams,Co-pilot,2,CDG,2024-03-16,10:15
 6,Amanda,Anderson,Flight Attendant,2,CDG,2024-03-16,10:15
